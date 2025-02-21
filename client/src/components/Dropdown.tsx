@@ -23,7 +23,8 @@ const AIDropdown: React.FC<PSDropdownProps> = ({ options, onSelect, children, dr
             <DropdownMenuTrigger asChild>
                 {children}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='start' className="w-28">
+            <DropdownMenuContent
+                align='start' className="rounded-2xl">
                 {options.map((option, index) => (
                     <DropdownMenuItem
                         key={index}

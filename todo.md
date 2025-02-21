@@ -13,12 +13,12 @@ This todo is a self-reminder for the tasks that need to be done to achieve the g
 - [x] Show loading when bot response is being fetched
 - [x] Bot message animation is not showing
 - [x] Bot animation should not be shown when fetching messages
-- [] show error if backend is down or request fails
+- [x] show error if backend is down or request fails
+- [x] Cancel ongoing request from chatInput
 - [] Add index_name in New Chat Input
 - [] Add model select under ChatInput
 - [] Sidebar should show delete confirmation dialog
 - [] Allow Chat Rename in Sidebar
-- [] Cancel ongoing request from chatInput
 
 -           ChatInput
                |

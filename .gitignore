@@ -12,9 +12,8 @@ research/data
 research/del_dat
 research/data1
 research/saved_index
-
-
-
+backend-chatbot/fast-env/
+backend/grpc_server/grpc-env/
 
 
 retrieval_service/retrieval_service.egg-info/
@@ -24,3 +23,5 @@ retrieval_service/test/logs/
 
 
 
+backend/grpc_server/chat_service_pb2_grpc.py
+backend/grpc_server/chat_service_pb2.py

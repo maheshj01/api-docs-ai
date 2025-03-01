@@ -5,6 +5,7 @@ import CopyIcon from "./CopyIcon"
 import SourcesList from "./SourcesComponent"
 import { TypewriterText } from "./TypewriterText"
 import ThreeDotLoader from "./ThreeDotLoader"
+import DateTimeHelper from "../utils/DateTimeHelper"
 
 interface BotBubbleProps {
     chat: any
@@ -21,6 +22,7 @@ const BotBubble: React.FC<BotBubbleProps> = ({ chat, index, length }) => {
     const emptyText = ['Hang on a sec...', 'Just a moment...', 'One sec...', 'Hold on...'];
     const isLastMessage: boolean = (index === length - 1);
     const chatId = useSelector((state: RootState) => state.app.chatId);
+    const localTime = DateTimeHelper.formatLocalTime(timestamp);
     return (
         <div className={`my-2 pt-2}`}>
             <TypewriterText
@@ -33,7 +35,7 @@ const BotBubble: React.FC<BotBubbleProps> = ({ chat, index, length }) => {
             </div>}
             {chatId === chat.id && !respLoading && !animating && <SourcesList sources={sources} />}
             <div className='flex justify-between items-center px-2'>
-                <div className="text-xs text-gray-500 ">{new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-xs text-gray-500 ">{localTime}</div>
                 {!respLoading && <CopyIcon
                     id='copy-content'
                     message='Copied!'

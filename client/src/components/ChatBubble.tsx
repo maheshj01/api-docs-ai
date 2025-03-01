@@ -6,6 +6,7 @@ import ChatInput from './ChatInput';
 import { Button } from '@nextui-org/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
+import DateTimeHelper from '../utils/DateTimeHelper';
 
 interface ChatProps {
     chat: any
@@ -21,7 +22,7 @@ const ChatBubble: React.FC<ChatProps> = ({ chat, index, length }) => {
     const dispatch = useDispatch<AppDispatch>();
     const messagesToDelete = [] as any;
     const agent = useSelector((state: RootState) => state.app.agent.valueOf());
-
+    const localTime = DateTimeHelper.formatLocalTime(timestamp);
     const UpdatePrompt = async (query: string, chatId: string) => {
         // if (chatId != null) {
         //     dispatch(setMessages(messages.filter((msg, i) => i < index)));
@@ -90,10 +91,10 @@ const ChatBubble: React.FC<ChatProps> = ({ chat, index, length }) => {
             }
             <div className='flex justify-between px-2 pt-1'>
                 {/* {loading && index === length - 1 ? <Spinner /> : <div />} */}
-                <div className="text-xs text-gray-500 ">{new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-xs text-gray-500 ">{localTime}</div>
                 {isEditing && <Button
                     className='text-xs text-gray-600'
-                    onClick={() => setIsEditing(false)}>
+                    onPress={() => setIsEditing(false)}>
                     Cancel
                 </Button>
 

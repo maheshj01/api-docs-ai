@@ -22,8 +22,8 @@ python server.py
 
 ```bash
 cd backend-chatbot
-python -m venv chatbot-env
-source chatbot-env/bin/activate
+python -m venv fast-env
+source fast-env/bin/activate
 pip install -r requirements.txt
 ```
 

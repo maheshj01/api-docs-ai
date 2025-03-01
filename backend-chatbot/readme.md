@@ -4,8 +4,8 @@ Run redis server:
 ```
 docker pull redis
 docker run -d --name redis-server -p 6379:6379 redis
-
 ```
+
 Run the server:
 ```
 python main.py

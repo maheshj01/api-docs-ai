@@ -12,8 +12,8 @@ export default class Constants {
     static chatBotDetails = {
         name: "Omnis AI",
         title: "Omnis AI - Your AI-Powered Documentation Assistant",
-        heroTitle: "An AI-powered assistant that makes  API docs seamless",
-        description: ""
+        heroTitle: "An AI assistant that makes  API docs easy to access",
+        description: "Engage with our advanced AI chatbot powered by popular LLM's. Get instant and upto date responses from the API documentation and the Internet.",
     }
 
     static readonly items: Record<string, Agent> = {

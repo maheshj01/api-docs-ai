@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
+import Constants from 'src/utils/Constants';
 
 const HeroSection: React.FC = () => {
   return (
@@ -12,15 +13,15 @@ const HeroSection: React.FC = () => {
         transition={{ duration: 0.5 }}
         className="text-5xl md:text-6xl font-bold mb-6"
       >
-        Experience the Future of <span className="text-blue-400">AI Conversations</span>
+        The Future of API Docs is <span className="text-blue-400">{Constants.chatBotDetails.name}</span>
+        <p className="text-white text-3xl">{Constants.chatBotDetails.heroTitle}</p>
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="text-xl text-gray-300 mb-12">
-        Engage with our advanced AI chatbot powered by cutting-edge technology.
-        Get instant responses, smart suggestions, and human-like interactions.
+        {Constants.chatBotDetails.description}
       </motion.p>
       <div className="flex justify-center space-x-4"> {/* Flex container for buttons */}
         <Button className="bg-blue-500 hover:bg-blue-600 px-8 py-3 rounded-full font-medium flex items-center space-x-2"

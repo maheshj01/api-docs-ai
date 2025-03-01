@@ -6,6 +6,7 @@ import { toggleSidebar } from "./redux/reducers/sidebarSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outlet, useLocation } from "react-router";
 import NewChat from "./pages/chat/NewChat";
+import { fetchModels } from "./redux/reducers/appSlice";
 
 export default function App() {
     const dispatch = useDispatch<AppDispatch>();
@@ -24,6 +25,10 @@ export default function App() {
         window.addEventListener('resize', checkWindowSize);
         return () => window.removeEventListener('resize', checkWindowSize);
     }, [sidebar.isOpen, dispatch]);
+
+    useEffect(() => {
+        dispatch(fetchModels());
+    }, [dispatch]);
 
     const AnimatePresenceType = AnimatePresence as ElementType;
     return (

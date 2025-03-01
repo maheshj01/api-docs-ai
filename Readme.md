@@ -6,13 +6,36 @@
 
 > ensure you have .env created for backend, refer `.env.example` in the `backend-chatbot` directory
 
+create a virtual environment for each backend and install the dependencies
+
+#### GRPC Backend
+
 ```bash
-- cd backend-chatbot
-- source chain-env/bin/activate # use the correct virtual env name
-- python main.py
+cd backend/grpc-server
+python -m venv grpc-env
+source grpc-env/bin/activate
+pip install -r requirements.txt
+python server.py
+```
+
+#### FastAPI Backend
+
+```bash
+cd backend-chatbot
+python -m venv chatbot-env
+source chatbot-env/bin/activate
+pip install -r requirements.txt
+```
+
+##### start the backend
+
+```bash
+python main.py
+```
 
 or for multi-threaded server:
 
+```bash
 - uvicorn app.api_router:app --host 127.0.0.1 --port 8000 --workers 4 --reload
 ```
 

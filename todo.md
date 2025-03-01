@@ -13,13 +13,16 @@ This todo is a self-reminder for the tasks that need to be done to achieve the g
 - [x] Show loading when bot response is being fetched
 - [x] Bot message animation is not showing
 - [x] Bot animation should not be shown when fetching messages
-- [] Use Local time when fetching messages
-- [] show error if backend is down or request fails
+- [x] Use Local time when fetching messages
+- [x] show error if backend is down or request fails
+- [x] Add model select under ChatInput
+- [x] Cancel ongoing request from chatInput
+- [] When streaming changing chat_id is sending response in wrong chats
 - [] Add index_name in New Chat Input
-- [] Add model select under ChatInput
 - [] Sidebar should show delete confirmation dialog
 - [] Allow Chat Rename in Sidebar
-- [] Cancel ongoing request from chatInput
+- [] Implement Google Auth
+- [] API requests are being sent twice ref: https://stackoverflow.com/a/73174743/8253662
 
 -           ChatInput
                |
@@ -28,12 +31,11 @@ This todo is a self-reminder for the tasks that need to be done to achieve the g
         |               |
 
 #### Notes for Robin
-[] For an edit query, the frontend should delete all messages from the current edit query to the last message. After that, it should send an API call with an 'edit query' flag. This flag will be used to first fetch all updates stored in Redis from Supabase.
-[x] GRPC routes for models availabe, indexs available
-[] web search RAG for LLM in the grpc sserver
-[] LLM reasoner and AI agents
-[] Multi modal capabilities
 
-
+- [] For an edit query, the frontend should delete all messages from the current edit query to the last message. After that, it should send an API call with an 'edit query' flag. This flag will be used to first fetch all updates stored in Redis from Supabase.
+- [x] GRPC routes for models availabe, indexs available
+- [] web search RAG for LLM in the grpc sserver
+- [] LLM reasoner and AI agents
+- [] Multi modal capabilities
 
 #### Notes for Darshan

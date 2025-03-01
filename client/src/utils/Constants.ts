@@ -1,6 +1,21 @@
 
 export default class Constants {
 
+
+    static endPoints = {
+        'stream_chat': '/api/v1/query/stream',
+        // 'stream_chat': '/api/v1/chat/grpc/stream',
+        'query_chat': '/api/v1/query',
+        'query_models': '/api/v1/grpc/models',
+    }
+
+    static chatBotDetails = {
+        name: "Omnis AI",
+        title: "Omnis AI - Your AI-Powered Documentation Assistant",
+        heroTitle: "An AI-powered assistant that makes  API docs seamless",
+        description: ""
+    }
+
     static readonly items: Record<string, Agent> = {
         'Crust Data': 'crust_data',
         'Next.js': 'nextjs',
@@ -21,5 +36,5 @@ export default class Constants {
 }
 
 export type Agent = 'crust_data' | 'nextjs' | 'flutter';
-export type LLM_Model = 'llama2' | 'llama3' | 'llama3.1';
+export type LLM_Model = 'llama2' | 'llama3' | 'llama3.1' | string;
 export type UserType = 'user' | 'bot'; 

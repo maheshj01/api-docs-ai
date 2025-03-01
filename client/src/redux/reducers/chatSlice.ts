@@ -63,8 +63,11 @@ export const streamResponse = createAsyncThunk<
     async ({ provider_name, message, agent }, { dispatch, rejectWithValue, getState }) => {
         const provider = ResponseProviderFactory.getProvider(provider_name);
         let collectedResponse = '';
+        const state = getState();
+        const chat_id = state.app.chatId;
+        const model = state.app.model;
         try {
-            await provider.streamResponse(message, agent, (chunk: any) => {
+            await provider.streamResponse(message, agent, chat_id!, model, (chunk: any) => {
                 switch (chunk.type) {
                     case 'sources':
                         dispatch(addStreamedMessage({
@@ -92,7 +95,6 @@ export const streamResponse = createAsyncThunk<
 
                     case 'end':
                         dispatch(setAnimating(false));
-                        const state = getState();
                         const chatId = state.app.chatId;
                         if (chatId && collectedResponse) {
                             dispatch(sendMessage({
@@ -103,7 +105,13 @@ export const streamResponse = createAsyncThunk<
                         }
                         break;
                     case 'error':
-                        throw new Error(chunk.message);
+                        console.log("Error received...");
+                        return rejectWithValue({
+                            sender: 'bot',
+                            message: chunk.content ?? 'Streaming failed. Please try again.',
+                            status: 'error',
+                            timestamp: new Date().toISOString(),
+                        });
 
                     default:
                         if (chunk.toString().includes('TypeError') || chunk instanceof TypeError) {
@@ -304,14 +312,9 @@ const chatReducer = createSlice({
         builder.addCase(streamResponse.fulfilled, (state) => {
             state.respLoading = false;
         });
-        builder.addCase(streamResponse.rejected, (state) => {
+        builder.addCase(streamResponse.rejected, (state, action) => {
             state.respLoading = false;
-            state.messages.push({
-                sender: 'bot',
-                message: 'Streaming failed. Please try again.',
-                status: 'error',
-                timestamp: new Date().toISOString(),
-            });
+            state.messages.push(action.payload);
         });
         builder.addCase(fetchChatById.pending, (state) => {
             state.isFetchingChat = true;

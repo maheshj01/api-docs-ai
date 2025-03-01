@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import ChatInput from '../../components/ChatInput';
 import ChatWindow from '../../components/ChatWindow';
-import Menu from '../../components/Menu';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../../components/Navbar';
 import { ArrowDownCircleIcon } from 'lucide-react';
@@ -10,10 +9,12 @@ import IconButton from '../../components/IconButton';
 import { FiSidebar } from 'react-icons/fi';
 import { toggleSidebar } from '../../redux/reducers/sidebarSlice';
 import { useLocation, useParams } from 'react-router';
-import Constants, { Agent } from 'src/utils/Constants';
+import Constants, { Agent, LLM_Model } from 'src/utils/Constants';
 import { AppDispatch, RootState } from 'src/redux/store';
-import { setAgent, setChatId } from 'src/redux/reducers/appSlice';
+import { setAgent, setChatId, setModel } from 'src/redux/reducers/appSlice';
 import { fetchChatById } from 'src/redux/reducers/chatSlice';
+import Menu from 'src/components/Menu';
+import AIDropdown from 'src/components/Dropdown';
 
 const ChatScreen: React.FC = () => {
   const { chatId } = useParams();
@@ -22,15 +23,19 @@ const ChatScreen: React.FC = () => {
   const isAtBottom = useSelector((state: RootState) => state.scroll.isAtBottom);
   const sidebar = useSelector((state: RootState) => state.sidebar);
   const location = useLocation(); //
-
+  const model = useSelector((state: RootState) => state.app.model);
+  const models = useSelector((state: RootState) => state.app.models);
   const handleMenuChange = (value: string) => {
     const selectedAgent: Agent = Constants.items[value];
     dispatch(setAgent(selectedAgent));
   };
+  const handleModelChange = (value: string) => {
+    const selectedModel: LLM_Model = value as LLM_Model;
+    dispatch(setModel(selectedModel));
+  };
 
   useEffect(() => {
     const scrollElement = scrollRef.current;
-
     if (!scrollElement) return;
 
     const onScroll = () => {
@@ -108,7 +113,18 @@ const ChatScreen: React.FC = () => {
               }}
             >
               <div className="absolute bottom-2 left-0 right-0 flex justify-center max-w-3xl mx-auto">
-                <p className='text-xs underline'>Powered by {process.env.REACT_APP_MODEL_NAME}</p>
+                <p className='text-xs'>Current Model &nbsp;</p>
+                <AIDropdown
+                  options={models}
+                  onSelect={(event: string, e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleModelChange(event);
+                  }}
+                >
+                  <p className='text-xs underline cursor-pointer'>
+                    {model ? model : 'choose a model'}
+                  </p>
+                </AIDropdown>
               </div>
             </div>
             <ChatInput
@@ -122,7 +138,7 @@ const ChatScreen: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

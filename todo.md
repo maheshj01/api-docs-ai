@@ -17,6 +17,11 @@ This todo is a self-reminder for the tasks that need to be done to achieve the g
 - [x] show error if backend is down or request fails
 - [x] Add model select under ChatInput
 - [x] Cancel ongoing request from chatInput
+- [] Allow user to edit query
+
+  - [] Delete all messages from current state and supabase for the chatId
+  - [] Send Stream request with edited query
+
 - [] When streaming changing chat_id is sending response in wrong chats
 - [] Add index_name in New Chat Input
 - [] Sidebar should show delete confirmation dialog

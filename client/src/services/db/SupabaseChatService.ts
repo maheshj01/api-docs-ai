@@ -49,11 +49,12 @@ class SupabaseChatService implements ChatService {
             ).select();
     }
 
-    async fetchChatById(chatId: string) {
+    async fetchChatMessagesById(chatId: string) {
         return await supabase
             .from('messages')
             .select('*')
-            .eq('chat_id', chatId);
+            .eq('chat_id', chatId)
+            .order('timestamp', { ascending: true });
     }
 
     async deleteChatById(chatId: string) {
@@ -74,12 +75,21 @@ class SupabaseChatService implements ChatService {
         }
     }
 
+    async deleteAfterMessageId(messageId: string, chatId: string, chat: any) {
+        return await supabase
+            .from('messages')
+            .delete()
+            .eq('chat_id', chatId)
+            .gte('timestamp', chat.timestamp)
+            .select();
+    }
+
     async deleteMessageById(messageId: string, chatId: string) {
         return await supabase
             .from('messages')
             .delete()
-            .eq('id', messageId)
             .eq('chat_id', chatId)
+            .eq('id', messageId)
             .select();
     }
 

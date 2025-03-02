@@ -141,11 +141,11 @@ export const stopStreaming = createAsyncThunk<void, { provider_name: LLM_Provide
     }
 );
 
-export const fetchChatById = createAsyncThunk<Object, string, { rejectValue: Object }>(
+export const fetchChatMessagesById = createAsyncThunk<Object, string, { rejectValue: Object }>(
     'chats/fetchChatById',
     async (chat_id, { rejectWithValue }) => {
         try {
-            const { data, error } = await SupabaseFactory.chatService.fetchChatById(chat_id);
+            const { data, error } = await SupabaseFactory.chatService.fetchChatMessagesById(chat_id);
             if (error) throw new Error(error.message);
             return data;
         }
@@ -191,6 +191,31 @@ export const sendMessage = createAsyncThunk<Object, { chat_id: string, message: 
             return rejectWithValue({
                 sender: 'bot',
                 message: 'Failed to send message',
+                status: 'error',
+                timestamp: new Date().toISOString(),
+            });
+        }
+    }
+);
+
+export const deleteMessagesOnEdit = createAsyncThunk<Object, { chat_id: string, chat: any, message_id: string, index: number }, { rejectValue: Object }>(
+    'chats/deleteMessagesOnEdit',
+    async ({ chat_id, chat, message_id, index }, { rejectWithValue, dispatch }) => {
+        try {
+            dispatch(filterMessagesAfterIndex({
+                chat_id,
+                message_id,
+                index
+            }));
+            console.log("Deleting messages after message id...");
+            // const { data, error } = 
+            await SupabaseFactory.chatService.deleteAfterMessageId(message_id, chat_id, chat);
+            // if (error) throw new Error(error.message);
+            // return data;
+        } catch (error: any) {
+            return rejectWithValue({
+                sender: 'bot',
+                message: 'Failed to edit message',
                 status: 'error',
                 timestamp: new Date().toISOString(),
             });
@@ -257,6 +282,10 @@ const chatReducer = createSlice({
                 timestamp: new Date().toISOString(),
             });
         },
+        filterMessagesAfterIndex: (state, action) => {
+            const { index } = action.payload;
+            state.messages = state.messages.filter((msg, i) => i < index);
+        },
         addStreamedMessage: (state, action) => {
             // Invoked when a chunk of streamed response is received
             // state.respLoading = false;
@@ -316,10 +345,10 @@ const chatReducer = createSlice({
             state.respLoading = false;
             state.messages.push(action.payload);
         });
-        builder.addCase(fetchChatById.pending, (state) => {
+        builder.addCase(fetchChatMessagesById.pending, (state) => {
             state.isFetchingChat = true;
         });
-        builder.addCase(fetchChatById.fulfilled, (state, action) => {
+        builder.addCase(fetchChatMessagesById.fulfilled, (state, action) => {
             state.isFetchingChat = false;
             // add success = true for each bot message
             const msgs = action.payload! as any[];
@@ -354,5 +383,5 @@ const chatReducer = createSlice({
     },
 });
 
-export const { addUserMessage, addStreamedMessage, setAnimating, setFetchingChat, setSendingMessage, setNewChat, setMessages } = chatReducer.actions;
+export const { addUserMessage, addStreamedMessage, setAnimating, setFetchingChat, setSendingMessage, setNewChat, setMessages, filterMessagesAfterIndex } = chatReducer.actions;
 export default chatReducer.reducer;

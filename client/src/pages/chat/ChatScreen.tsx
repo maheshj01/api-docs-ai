@@ -12,9 +12,9 @@ import { useLocation, useParams } from 'react-router';
 import Constants, { Agent, LLM_Model } from 'src/utils/Constants';
 import { AppDispatch, RootState } from 'src/redux/store';
 import { setAgent, setChatId, setModel } from 'src/redux/reducers/appSlice';
-import { fetchChatById } from 'src/redux/reducers/chatSlice';
 import Menu from 'src/components/Menu';
 import AIDropdown from 'src/components/Dropdown';
+import { fetchChatMessagesById } from 'src/redux/reducers/chatSlice';
 
 const ChatScreen: React.FC = () => {
   const { chatId } = useParams();
@@ -51,7 +51,7 @@ const ChatScreen: React.FC = () => {
 
   useEffect(() => {
     if (chatId) {
-      dispatch(fetchChatById(chatId));
+      dispatch(fetchChatMessagesById(chatId));
       setTimeout(() => {
         scrollToBottom();
       }, 2000);

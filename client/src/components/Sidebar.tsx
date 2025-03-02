@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { fetchChats } from "../redux/reducers/userChatsSlice";
 import SidebarItem from "./SidebarItem";
 import { useNavigate } from "react-router";
-import { deleteChatById, fetchChatById, setNewChat } from "../redux/reducers/chatSlice";
+import { deleteChatById, fetchChatMessagesById, setNewChat } from "../redux/reducers/chatSlice";
 import { setChatId } from "../redux/reducers/appSlice";
 interface SidebarProps {
 
@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     const handleChatClick = (chat: any) => {
         if (app.chatId === chat.id) return;
         dispatch(setChatId(chat.id));
-        dispatch(fetchChatById(chat.id));
+        dispatch(fetchChatMessagesById(chat.id));
         navigate(`/chat/${chat.id}`);
     };
 

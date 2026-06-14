@@ -1,111 +1,177 @@
 # API Docs Chatbot
 
-### Running the App
+A conversational AI assistant that answers questions about API/framework documentation
+(Flutter, Next.js, Crustdata, …) using **Retrieval-Augmented Generation (RAG)**. Ask a
+question in natural language and get a streamed, source-cited answer grounded in the
+official docs instead of scrolling through pages of reference material.
 
-##### Running the Backend
-
-> ensure you have .env created for backend, refer `.env.example` in the `backend-chatbot` directory
-
-```bash
-- cd backend-chatbot
-- source chain-env/bin/activate # use the correct virtual env name
-- python main.py
-
-or for multi-threaded server:
-
-- uvicorn app.api_router:app --host 127.0.0.1 --port 8000 --workers 4 --reload
-```
-
-- Ensure Ollama is running in the background with the required models downloaded.
-  Supported models:
-- llama3.1(8b),
-- llama 3
-- llama 2
-
-> The Swagger documentation can be found at http://localhost:8000/docs
-
-#### Running the Client
-
-See the client [README](client/README.md) for instructions on running the client.
-
-## Overview
-
-The API Docs Chatbot is a conversational AI tool designed to help developers learn and navigate API documentation in an intuitive and engaging way. By utilizing advanced language models, this chatbot offers real-time, up-to-date information from a variety of API docs, including popular technologies like
-
-- [Crustdata API Docs](https://crustdata.notion.site/Crustdata-Discovery-And-Enrichment-API-c66d5236e8ea40df8af114f6d447ab48)
-- [NextJS Api Docs](https://nextjs.org/docs)
-- [Flutter Api Docs](https://docs.flutter.dev/)
-
-### Sitemap Urls
-
-- Flutter: https://docs.flutter.dev/sitemap.xml
-- NextJS: https://nextjs.org/sitemap.xml
-
-As new technologies emerge, our chatbot evolves to become a one-stop solution for API documentation, allowing users to learn about frameworks and libraries through seamless conversations.
-
-## Why We Are Building This
-
-In today's fast-paced development world, staying up-to-date with the latest documentation can be challenging. API docs are often lengthy, dense, and hard to digest. As new technologies keep coming up, developers find it increasingly difficult to keep track of everything.
-
-This chatbot solves that problem by offering a **conversational interface** that provides relevant, up-to-date information from official API docs. Whether you're learning a new technology or troubleshooting an issue, this bot will provide **instant** answers based on the latest documentation available. It will **save time** by making it easier to find answers and help developers keep their knowledge current.
-
-### Key Features:
-
-- **Up-to-date Information**: The chatbot will pull the latest data from API docs (refreshed every month) ensuring that users get relevant and accurate responses.
-- **Conversational Learning**: Instead of reading through pages of docs, users can ask questions in a natural language format and receive responses that are easy to understand.
-- **Support for Multiple Technologies**: The bot will support a growing list of technologies, starting with **Next.js**, **Flutter**, **React**, and more to come in the future.
-
-## Problems We Are Solving
-
-- **Fragmented Learning**: Developers often have to switch between different resources to understand various parts of the documentation. Our chatbot consolidates all that information into one place, providing context and answers tailored to each user's needs.
-- **Outdated Information**: APIs frequently get updated, and keeping track of all changes can be daunting. This bot ensures users always have access to the latest API documentation, refreshed every month.
-- **Time-consuming Search**: Instead of scrolling through long docs, the bot provides concise, accurate answers, saving valuable time for developers.
-
-## Potential Users
-
-- **Developers**: From beginners to experienced developers, anyone working with evolving technologies like React, Next.js, Flutter, etc., can benefit from this chatbot to quickly retrieve relevant information.
-- **Tech Enthusiasts**: Those passionate about keeping up with the latest trends and learning about new frameworks and libraries can use the chatbot to stay ahead of the curve.
-- **Educators & Mentors**: The chatbot can be used as a supplementary learning tool to help developers understand key concepts from API docs and ask questions on the go.
-- **Tech Support Teams**: For teams managing client requests related to documentation or troubleshooting, this bot can help respond to common API-related queries quickly.
-
-## Tech Stack
-
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **Backend**: Python Fast API, LangChain (for querying large text content from API docs), and a LLM such as LLama3.1, GPT-4 or Gemini 1.5 Flash for conversational AI.
-- **Data**: API docs Vectorized and stored in Pinecone DB for fast retrieval.
-
-Here's the modified "How It Works" section based on your inputs:
+> For a deeper technical walkthrough (request lifecycle, RAG pipeline, data model,
+> configuration, troubleshooting) see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ---
 
-## How It Works
+## How it works (in one picture)
 
-1. **User Signup**: To get started, users must sign up for an account using **Google Sign-In**. This ensures a smooth authentication process and keeps everything tied to their Google account.
+```
+                ┌─────────────┐   stream {sources, markdown}   ┌──────────────────────┐
+   You  ───────▶│   Client    │◀───────────────────────────────│   FastAPI backend    │
+   (chat)       │  (React)    │   POST /api/v1/query/stream     │  (backend-chatbot)   │
+                └──────┬──────┘                                 └──────────┬───────────┘
+                       │ auth + chat history                               │
+                       ▼                                                   ▼
+                ┌─────────────┐                          ┌────────────────────────────────┐
+                │  Supabase   │                          │  RAG retrieval pipeline          │
+                │ (Postgres + │                          │  embed → FAISS search → rerank   │
+                │   Auth)     │                          │  → relevance check → build ctx   │
+                └─────────────┘                          └───────────────┬──────────────────┘
+                       ▲                                                  │ context + prompt
+                       │ chat history cache                              ▼
+                ┌─────────────┐                          ┌────────────────────────────────┐
+                │    Redis    │                          │   Ollama (local LLM, llama3.1)   │
+                └─────────────┘                          └────────────────────────────────┘
+```
 
-2. **Credit System**:
+1. The user signs in (Supabase Auth) and starts a chat scoped to one doc set ("agent"),
+   e.g. `flutter` or `nextjs`. Chats and messages are stored in Supabase.
+2. On each message the client `POST`s `{ model_name, query, index_name }` to the backend's
+   streaming endpoint.
+3. The backend runs a **hybrid retrieval pipeline** over the pre-built document index for
+   that doc set, checks relevance, and assembles a context.
+4. The context + question are sent to a local **Ollama** LLM, whose answer is **streamed**
+   back to the client as JSON chunks (`sources` first, then `markdown` tokens).
 
-   - **Free Plan**: Upon signing up, users receive **10 free credits** to explore the chatbot's functionality.
-   - **Subscription Plan**: Users can subscribe for **$10/month** to access up to **50 daily credits**. The pricing may be adjusted once we have accurate calculations.
-   - Users will use credits to initiate chats, and credits will be deducted based on usage.
+---
 
-3. **Creating Chats**:
+## Tech stack
 
-   - The chatbot is organized by **API documentation**. Users can start a **new chat** for each technology or API (e.g., one chat for Flutter, another for Next.js).
-   - **One chat is dedicated per API doc**—if a user wants to chat about Next.js after discussing Flutter, they will need to create a new chat specifically for Next.js.
+| Layer        | Technology |
+|--------------|------------|
+| Frontend     | React 18, TypeScript, Tailwind CSS, Redux Toolkit, Supabase JS |
+| Backend API  | Python, FastAPI, LangChain |
+| LLM          | Ollama (local) — `llama3.1`, `llama3`, `llama2` |
+| Retrieval    | FAISS (vector index), `fastembed` (dense) + sparse embeddings, `sentence-transformers` reranker, NLTK |
+| Auth & DB    | Supabase (Postgres + Auth) |
+| Cache        | Redis (chat-history caching) |
+| Optional     | gRPC server (alternative LLM-serving path, not required) |
+| Infra        | Docker Compose |
 
-4. **Chat Retention**:
+---
 
-   - All user chats are **retained for context**, so users can continue their discussions or revisit previous questions and answers at any time. This context helps the bot provide more relevant and accurate responses over multiple interactions.
+## Quick start (Docker Compose — recommended)
 
-5. **Continuous Learning**: As the bot learns from previous interactions, the conversations get progressively more relevant, helping users navigate and learn the API docs in a more efficient and personalized manner.
+> The `docker-compose.yml` brings up the FastAPI backend, Redis, and (optionally) the gRPC
+> server. Ollama runs on the host (or as its own container) and must have a model pulled.
 
-### Future Enhancements
+**Prerequisites:** Docker Desktop, [Ollama](https://ollama.com), and a Supabase project.
 
-In the future We will allow users to provide their own Data Source in the form of
+```bash
+# 1. Pull an LLM into Ollama (one-time, ~5 GB)
+ollama pull llama3.1
 
-- Url
-- Vector Database
-- Text File
-- PDF File
+# 2. Start the stack
+docker compose up -d backend redis
 
-This will allow users to use the chatbot for their own API docs or any other text data they want to query.
+# 3. Verify the backend is serving
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/docs   # -> 200
+```
+
+Backend Swagger UI: <http://localhost:8000/docs>
+
+Then run the client:
+
+```bash
+cd client
+npm install
+npm start            # http://localhost:3000
+```
+
+See the client [README](client/README.md) for client-specific details.
+
+---
+
+## Quick start (manual / no Docker)
+
+Each backend uses its own virtualenv. Create a `.env` from `backend-chatbot/.env.example` first.
+
+```bash
+# FastAPI backend
+cd backend-chatbot
+python -m venv fast-env && source fast-env/bin/activate
+pip install -r requirements.txt
+python main.py
+# or, multi-worker: uvicorn app.api_router:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Optional gRPC backend (only if you use the gRPC streaming path):
+
+```bash
+cd backend/grpc_server
+python -m venv grpc-env && source grpc-env/bin/activate
+pip install -r requirements.txt
+python server.py
+```
+
+Ensure **Ollama** is running with the required model(s) pulled (`llama3.1`, `llama3`, or
+`llama2`).
+
+---
+
+## Project structure
+
+```
+api-docs-ai/
+├── client/                 # React + TypeScript frontend (Supabase auth, chat UI)
+├── backend-chatbot/        # FastAPI backend — the main service
+│   ├── app/
+│   │   ├── api_router.py    # app entrypoint; mounts routers, startup hooks
+│   │   ├── routes/          # query (RAG stream), crawl, status, models, grpc_routes
+│   │   ├── agents/          # QAAgent (answer), CrawlerAgent (build index)
+│   │   ├── core/            # config (Settings), model registry, logger
+│   │   ├── middleware/      # auth (Supabase JWT)
+│   │   └── utils/           # llm_utils (Ollama), retrieval manager
+│   └── retrieval_service/   # RAG pipeline (chunking, embeddings, FAISS, rerank, scoring)
+├── backend/grpc_server/    # Optional gRPC LLM-serving server
+├── research/               # Experiments / notebooks
+└── docs/ARCHITECTURE.md    # Detailed architecture & ops docs
+```
+
+---
+
+## Key API endpoints (FastAPI backend)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/api/v1/query/stream` | Streaming RAG answer (in-process Ollama) — used by the client |
+| POST | `/api/v1/query` | Non-streaming RAG answer |
+| POST | `/api/v1/chat/grpc/stream` | Streaming answer via the gRPC server (alternative) |
+| POST | `/api/v1/crawl` | (Re)build the document index for a doc set |
+| GET  | `/api/v1/status` | Service/health status |
+| GET  | `/api/v1/models` | Available LLM models |
+| GET  | `/docs` | Swagger UI |
+
+---
+
+## Supported documentation sets
+
+| Doc set (`index_name`) | Source |
+|------------------------|--------|
+| `flutter`   | <https://docs.flutter.dev/> (sitemap: `/sitemap.xml`) |
+| `nextjs`    | <https://nextjs.org/docs> (sitemap: `/sitemap.xml`) |
+| `crust_data`| [Crustdata API docs](https://crustdata.notion.site/Crustdata-Discovery-And-Enrichment-API-c66d5236e8ea40df8af114f6d447ab48) |
+
+New doc sets are added by crawling a sitemap and building a new index.
+
+---
+
+## Why this project
+
+API docs are long and dense, and they change often. This chatbot offers a **conversational
+interface** that returns concise, **source-cited** answers grounded in the latest official
+documentation — saving developers the time of searching through reference pages. It is built
+as a learning project exploring RAG, local LLMs, and full-stack AI app architecture.
+
+## Roadmap
+
+- User-provided data sources (URL, PDF, text file, custom vector DB)
+- More doc sets (React, React Native, etc.)
+- Scheduled monthly re-crawl to keep indexes fresh

@@ -32,7 +32,7 @@ services:
       - HOST=0.0.0.0
       - PORT=8000
       - ENVIRONMENT=development
-      - CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+      - CORS_ORIGINS=["http://localhost:3000","http://chat.localhost:3000","http://localhost:8000"]
       
       # Model Settings
       - DEFAULT_MODEL_NAME=llama3.1

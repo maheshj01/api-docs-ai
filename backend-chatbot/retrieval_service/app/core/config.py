@@ -34,8 +34,12 @@ class Config(metaclass=Singleton):
             "dense_weight": 0.7,
             "sparse_weight": 0.3,
             "rerank_weight": 0.5,
-            "relevance_threshold": 0.6,
-            "term_overlap_threshold": 0.25
+            # Relaxed for local use: rely on semantic similarity and drop the
+            # brittle lexical term-overlap gate (it required the query's exact
+            # words to appear in the single top snippet, rejecting valid hits
+            # like "What is a Widget?" that scored 0.63 similarity).
+            "relevance_threshold": 0.5,
+            "term_overlap_threshold": 0.0
         }
         
         # Create base data directory

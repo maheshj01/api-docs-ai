@@ -36,6 +36,16 @@ class PipelineManager:
         """Search documents using the appropriate pipeline"""
         try:
             pipeline = self.get_pipeline(source)
+            # RetrievalPipeline (and its embedders) are singletons, so only one
+            # source's chunks/embeddings are live at a time. Make the requested
+            # source active before searching, otherwise a query for one source
+            # would be answered from whichever source was loaded last.
+            if pipeline.current_source != source:
+                self.logger.info(
+                    f"Switching active source to {source.value} "
+                    f"(was {getattr(pipeline.current_source, 'value', None)})"
+                )
+                pipeline.load_source(source)
             return pipeline.search_documents(query)
         except Exception as e:
             self.logger.error(f"Error searching documents: {e}")

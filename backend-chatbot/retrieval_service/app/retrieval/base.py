@@ -81,9 +81,14 @@ class RetrievalPipeline(metaclass=Singleton):
         """Load data for a specific source."""
         try:
             if not self.data_manager.check_data_exists(source):
-                logger.info(f"No existing data found for {source.value}")
-                self.process_documents(source)
-                return
+                # Do NOT auto-crawl here: crawling a full sitemap (hundreds of
+                # URLs) at load time blocks app startup. Skip sources without a
+                # cached index; build them explicitly via the /crawl route.
+                logger.info(
+                    f"No existing data found for {source.value}; skipping "
+                    f"(run /crawl to build its index)"
+                )
+                raise FileNotFoundError(f"No cached index for {source.value}")
             
             logger.info(f"Loading data for {source.value}")
             data = self.data_manager.load_data(source)

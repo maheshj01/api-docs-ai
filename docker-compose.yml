@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Redis for session caching
+  redis:
+    image: redis:7-alpine
+    container_name: docs-chatbot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chatbot-network
+
+  # Backend-Chatbot (FastAPI)
+  backend:
+    build:
+      context: ./backend-chatbot
+      dockerfile: Dockerfile.dev
+    container_name: docs-chatbot-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Core Settings
+      - PROJECT_NAME=API Docs Chatbot
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ENVIRONMENT=development
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+      
+      # Model Settings
+      - DEFAULT_MODEL_NAME=llama2
+      - ENABLED_MODELS=["llama2","llama3"]
+      - MODEL_TIMEOUT=300
+      
+      # Data & Processing
+      - DATA_DIR=/app/data
+      - MAX_CHUNK_SIZE=2000
+      - RETRIEVAL_SERVICE_PATH=/app/retrieval_service
+      - LOG_LEVEL=INFO
+      
+      # gRPC Services
+      - GRPC_PORT=50051
+      - LLM_SERVICE_HOST=localhost
+      - LLM_SERVICE_PORT=50051
+      - RAG_SERVICE_HOST=localhost
+      - RAG_SERVICE_PORT=8001
+      - GRPC_SERVER_ADDRESS=grpc-server:50051
+      
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_PASSWORD=None
+      - REDIS_TTL=3600
+      
+      # Supabase (update with your credentials)
+      - SUPABASE_URL=http://supabase:8000
+      - SUPABASE_KEY=your_supabase_key_here
+      - SUPABASE_JWT_SECRET=your_jwt_secret_here
+      
+      # Ollama (use host's instance)
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend-chatbot:/app
+      - /app/__pycache__
+    networks:
+      - chatbot-network
+    command: uvicorn app.api_router:app --host 0.0.0.0 --port 8000 --reload
+
+  # gRPC Server (optional, alternative to FastAPI)
+  grpc-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docs-chatbot-grpc
+    ports:
+      - "50051:50051"
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Use host's Ollama
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    networks:
+      - chatbot-network
+
+  # Client (React Frontend - optional)
+  # Commented out to speed up initial setup
+  # Uncomment after main services are working
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   container_name: docs-chatbot-client
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - REACT_APP_API_URL=http://localhost:8000
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - chatbot-network
+
+volumes:
+  redis_data:
+
+networks:
+  chatbot-network:
+    driver: bridge

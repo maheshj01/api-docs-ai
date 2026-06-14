@@ -1,0 +1,47 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies needed for building packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    gcc \
+    g++ \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip, setuptools, and wheel first
+RUN pip install --upgrade pip setuptools wheel
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install torch first (CPU version) with proper indexing
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+# Install other Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt || pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Install retrieval service
+RUN cd retrieval_service && pip install -e . || true
+
+# Create necessary __init__.py files
+RUN touch app/__init__.py && \
+    touch app/agents/__init__.py && \
+    touch app/core/__init__.py && \
+    touch app/routes/__init__.py && \
+    touch app/services/__init__.py && \
+    touch app/utils/__init__.py
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Default command (can be overridden in docker-compose)
+CMD ["uvicorn", "app.api_router:app", "--host", "0.0.0.0", "--port", "8000"]

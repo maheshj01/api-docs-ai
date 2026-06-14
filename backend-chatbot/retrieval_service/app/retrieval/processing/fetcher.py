@@ -65,13 +65,26 @@ class URLFetcher:
                     return None
     
     def fetch_all_contents(self, urls: List[str]) -> dict:
-        """Fetch content from multiple URLs with progress bar."""
+        """Fetch content from multiple URLs, logging progress periodically.
+
+        tqdm's bar uses carriage returns and looks frozen in `docker logs`, so
+        we also emit a plain INFO line every few URLs (newline-based) to make
+        crawl progress visible in container logs.
+        """
         contents = {}
-        
-        for url in tqdm(urls, desc="Fetching URLs"):
+        total = len(urls)
+        # log roughly every 5%, but at least every 10 URLs
+        step = max(1, min(10, total // 20)) if total else 1
+
+        for i, url in enumerate(tqdm(urls, desc="Fetching URLs"), start=1):
             content = self.fetch_url_content(url)
             if content:
                 contents[url] = content
-        
-        logger.info(f"Successfully fetched {len(contents)} out of {len(urls)} URLs")
+            if i == 1 or i == total or i % step == 0:
+                logger.info(
+                    f"Crawl progress: {i}/{total} URLs fetched "
+                    f"({len(contents)} with content)"
+                )
+
+        logger.info(f"Successfully fetched {len(contents)} out of {total} URLs")
         return contents

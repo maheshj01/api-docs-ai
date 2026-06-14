@@ -61,47 +61,29 @@ async def verify_token(credentials: HTTPAuthorizationCredentials) -> dict:
         )
 
 async def auth_middleware(request: Request):
-    """Middleware to verify authentication token."""
+    """Middleware to verify authentication token.
+
+    NOTE: Auth verification is intentionally bypassed for local/learning use.
+    The token (if any) is decoded WITHOUT signature verification so the user
+    id/email is still available downstream, but no signature/issuer/expiry
+    checks are enforced. Do NOT use this in production.
+    """
+    dummy_user = {
+        "sub": "local-dev-user",
+        "email": "local@dev",
+        "role": "authenticated",
+    }
+    auth = request.headers.get("Authorization")
+    if not auth:
+        request.state.user = dummy_user
+        return dummy_user
+
     try:
-        # Get authorization header
-        auth = request.headers.get("Authorization")
-        if not auth:
-            raise HTTPException(
-                status_code=401,
-                detail="Authorization header missing"
-            )
-
-        # Verify the token format
         scheme, token = auth.split()
-        if scheme.lower() != "bearer":
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid authentication scheme"
-            )
-
-        # Debug logging
-        logger.debug(f"Received token: {token[:10]}...")
-
-        # Verify the token
-        credentials = HTTPAuthorizationCredentials(
-            credentials=token, 
-            scheme=scheme
-        )
-        payload = await verify_token(credentials)
-        
-        # Add user info to request state
+        payload = jwt.decode(token, options={"verify_signature": False})
         request.state.user = payload
-        
         return payload
-        
-    except ValueError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid authorization header format"
-        )
     except Exception as e:
-        logger.error(f"Authentication error: {str(e)}")
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication failed"
-        ) 
+        logger.warning(f"Auth bypass: could not decode token ({e}); using dummy user")
+        request.state.user = dummy_user
+        return dummy_user

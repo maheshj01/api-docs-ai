@@ -32,6 +32,9 @@ COPY . .
 # Install retrieval service
 RUN cd retrieval_service && pip install -e . || true
 
+# Pre-download NLTK data used by tokenization / relevance scoring
+RUN python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')"
+
 # Create necessary __init__.py files
 RUN touch app/__init__.py && \
     touch app/agents/__init__.py && \

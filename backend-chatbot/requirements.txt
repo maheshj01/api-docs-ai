@@ -19,3 +19,12 @@ grpcio==1.70.0
 grpcio-tools==1.70.0
 httpx==0.27.0
 redis==5.0.1
+# --- added: runtime imports that were missing from this file ---
+xmltodict==0.13.0
+nltk==3.9.1
+fastembed==0.8.0
+PyJWT==2.13.0
+psutil==7.2.2
+supabase==2.31.0
+# cryptography 49.x's Rust ext crashes (SIGILL) on this Docker arm64 VM; pin <45
+cryptography==44.0.1

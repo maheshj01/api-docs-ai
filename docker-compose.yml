@@ -35,8 +35,8 @@ services:
       - CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
       
       # Model Settings
-      - DEFAULT_MODEL_NAME=llama2
-      - ENABLED_MODELS=["llama2","llama3"]
+      - DEFAULT_MODEL_NAME=llama3.1
+      - ENABLED_MODELS=["llama3.1","llama2","llama3"]
       - MODEL_TIMEOUT=300
       
       # Data & Processing

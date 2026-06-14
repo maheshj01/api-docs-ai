@@ -57,32 +57,41 @@ official docs instead of scrolling through pages of reference material.
 
 ---
 
-## Quick start (Docker Compose — recommended)
+## Quick start (one command)
 
-> The `docker-compose.yml` brings up the FastAPI backend, Redis, and (optionally) the gRPC
-> server. Ollama runs on the host (or as its own container) and must have a model pulled.
-
-**Prerequisites:** Docker Desktop, [Ollama](https://ollama.com), and a Supabase project.
+**Prerequisites:** Docker Desktop, [Ollama](https://ollama.com) with a model pulled, a Supabase
+project, and Node.js (for the client). First time only: `ollama pull llama3.1` and
+`cd client && npm install`.
 
 ```bash
-# 1. Pull an LLM into Ollama (one-time, ~5 GB)
-ollama pull llama3.1
-
-# 2. Start the stack
-docker compose up -d backend redis
-
-# 3. Verify the backend is serving
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/docs   # -> 200
+make start   # backend + redis (Docker) and the client (npm) — all in the background
+make stop    # stop everything
 ```
 
-Backend Swagger UI: <http://localhost:8000/docs>
+That's it. `make start` brings up the FastAPI backend + Redis via Docker and launches the
+React client; `make stop` tears it all down. Other targets:
 
-Then run the client:
+| Command | What it does |
+|---------|--------------|
+| `make start` | Start backend + redis (Docker) and the client (npm) |
+| `make stop` | Stop the client and the Docker services |
+| `make restart` | `stop` then `start` |
+| `make status` | Show what's running + backend health |
+| `make logs` | Tail the backend logs |
+
+- Backend Swagger UI: <http://localhost:8000/docs> (ready ~30s after start)
+- Client: <http://localhost:3000> (compiling — `tail -f client.log` to watch)
+- **Ollama** runs as its own container (`docs-chatbot-ollama`) and is treated as an always-on
+  dependency — `make` does not start/stop it.
+
+### Manual equivalent
+
+If you'd rather run the pieces yourself:
 
 ```bash
-cd client
-npm install
-npm start            # http://localhost:3000
+docker compose up -d backend redis        # backend + redis
+cd client && npm start                     # client on http://localhost:3000
+# stop:  docker compose down  (+ Ctrl-C the client)
 ```
 
 See the client [README](client/README.md) for client-specific details.

@@ -4,13 +4,22 @@ class DocSource(Enum):
     """Documentation sources"""
     FLUTTER = "flutter"
     NEXTJS = "nextjs"
-    
+    VUE = "vue"
+    FASTAPI = "fastapi"
+
     @property
     def sitemap_url(self) -> str:
-        """Get sitemap URL for the source"""
+        """Get sitemap URL for the source.
+
+        NOTE: only flat <urlset> sitemaps are supported (the fetcher does not
+        follow <sitemapindex> files). Verify a new source's sitemap is a flat
+        urlset before adding it.
+        """
         urls = {
             DocSource.FLUTTER: "https://docs.flutter.dev/sitemap.xml",
-            DocSource.NEXTJS: "https://nextjs.org/sitemap.xml"
+            DocSource.NEXTJS: "https://nextjs.org/sitemap.xml",
+            DocSource.VUE: "https://vuejs.org/sitemap.xml",
+            DocSource.FASTAPI: "https://fastapi.tiangolo.com/sitemap.xml"
         }
         return urls[self]
     

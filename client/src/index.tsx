@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+// @ts-ignore: Allow side-effect CSS import without type declarations
 import './index.css';
 import { Provider } from 'react-redux';
 import { AppThemeProvider } from './services/AppThemeProvider';

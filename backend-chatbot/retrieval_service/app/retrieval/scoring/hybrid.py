@@ -101,7 +101,7 @@ class HybridSearch(metaclass=Singleton):
             
             # Sort by final score
             final_results.sort(key=lambda x: x["scores"]["final"], reverse=True)
-            
+
             return final_results
             
         except Exception as e:

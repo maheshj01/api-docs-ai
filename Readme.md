@@ -7,6 +7,9 @@ official docs instead of scrolling through pages of reference material.
 
 > For a deeper technical walkthrough (request lifecycle, RAG pipeline, data model,
 > configuration, troubleshooting) see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+>
+> New to RAG? Start with **[docs/RAG.md](docs/RAG.md)** — a learner's guide to how retrieval-
+> augmented generation works, explained against this project's actual code.
 
 ---
 
@@ -141,7 +144,8 @@ api-docs-ai/
 │   └── retrieval_service/   # RAG pipeline (chunking, embeddings, FAISS, rerank, scoring)
 ├── backend/grpc_server/    # Optional gRPC LLM-serving server
 ├── research/               # Experiments / notebooks
-└── docs/ARCHITECTURE.md    # Detailed architecture & ops docs
+├── docs/ARCHITECTURE.md    # Detailed architecture & ops docs
+└── docs/RAG.md             # Learner's guide to how the RAG pipeline works
 ```
 
 ---

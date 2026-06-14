@@ -58,6 +58,10 @@ answer body.
 
 ## 3. RAG retrieval pipeline
 
+> New to RAG or want the *why* behind each step? See the learner-focused
+> **[RAG.md](RAG.md)** — it explains embeddings, chunking, hybrid search, and reranking from
+> scratch using this project's code. The section below is the condensed reference.
+
 Located in `backend-chatbot/retrieval_service/app/retrieval/`.
 
 1. **Document loading** (`processing/`) — docs for each set are loaded from `data/<set>_docs`
